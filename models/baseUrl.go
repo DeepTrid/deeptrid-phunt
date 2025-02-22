@@ -12,3 +12,9 @@ type BaseUrl struct {
 	Url       string    `gorm:"not null;uniqueIndex"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 }
+
+func NewBaseUrl(url string) *BaseUrl {
+	return &BaseUrl{
+		Url: url,
+	}
+}

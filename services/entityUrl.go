@@ -44,7 +44,7 @@ func (h *EntityUrlService) GetEntityUrlByUrl(url string) (models.EntityUrl, erro
 }
 
 func (h *EntityUrlService) CreateEntityUrlRecord(url string, baseEntityUrl string) error {
-	entityUrl := models.EntityUrl{Url: url, BaseEntityUrl: baseEntityUrl}
+	entityUrl := models.NewEntityUrl(url, baseEntityUrl)
 	err := h.postgreDb.GormDB.Create(entityUrl).Error
 	if err != nil {
 		return fmt.Errorf("failed to create entity url: %w", err)

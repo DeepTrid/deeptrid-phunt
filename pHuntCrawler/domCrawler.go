@@ -2,17 +2,19 @@ package phuntcrawler
 
 import (
 	"fmt"
+	"net/http"
 	"slices"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/fmelihh/product-hunt-graph-visualize/services"
 )
 
 const PRODUCT_HUNT_BASE_URL string = "https://www.producthunt.com"
 
 type ServiceDependencies struct {
-	baseUrlService   services.BaseUrlService
-	entityUrlService services.EntityUrlService
+	BaseUrlService   services.BaseUrlService
+	EntityUrlService services.EntityUrlService
 }
 
 type PhuntDomCrawler struct {
@@ -25,21 +27,23 @@ func NewPhuntDomCrawler(serviceDependencies *ServiceDependencies) *PhuntDomCrawl
 	}
 }
 
-func (p *PhuntDomCrawler) crawl() []Product {
-	baseUrls := p.generateBaseUrls()
+func (p *PhuntDomCrawler) Crawl() []Product {
+	baseUrls := p.GenerateBaseUrls()
 	allEntityUrls := make([]string, 10)
 
 	for _, baseUrl := range baseUrls {
-		entityUrls := p.collectEntityUrls(baseUrl)
+		entityUrls := p.CollectEntityUrls(baseUrl)
 		for _, entityUrl := range entityUrls {
-			p.serviceDependencies.entityUrlService.CreateEntityUrlRecord(entityUrl, baseUrl)
+			p.serviceDependencies.EntityUrlService.CreateEntityUrlRecord(entityUrl, baseUrl)
 			allEntityUrls = append(allEntityUrls, entityUrl)
+			fmt.Printf("%s entity url was successfulyy added to db", entityUrl)
 		}
-		p.serviceDependencies.baseUrlService.CreateBaseUrlRecord(
+		p.serviceDependencies.BaseUrlService.CreateBaseUrlRecord(
 			baseUrl,
 		)
+		fmt.Printf("%s base url was successfully added to db, total entity url is %d", baseUrl, len(allEntityUrls))
+		time.Sleep(30 * time.Second)
 	}
-	fmt.Print(allEntityUrls)
 	/*
 		ctx, cancel := chromedp.NewContext(context.Background())
 		defer cancel()
@@ -56,8 +60,8 @@ func (p *PhuntDomCrawler) crawl() []Product {
 	return nil
 }
 
-func (p *PhuntDomCrawler) generateBaseUrls() []string {
-	baseUrls, err := p.serviceDependencies.baseUrlService.GetAllUrls()
+func (p *PhuntDomCrawler) GenerateBaseUrls() []string {
+	baseUrls, err := p.serviceDependencies.BaseUrlService.GetAllUrls()
 	if err != nil {
 		panic(err)
 	}
@@ -77,8 +81,9 @@ func (p *PhuntDomCrawler) generateBaseUrls() []string {
 		return dates
 	})()
 
-	filteredUrls := make([]string, 10, 10)
+	filteredUrls := make([]string, 0, 10)
 	for _, url := range allPossibleUrls {
+		url = PRODUCT_HUNT_BASE_URL + "/leaderboard/daily/" + url
 		if !slices.Contains(baseUrls, url) {
 			filteredUrls = append(filteredUrls, url)
 		}
@@ -88,10 +93,33 @@ func (p *PhuntDomCrawler) generateBaseUrls() []string {
 	return filteredUrls
 }
 
-func (p *PhuntDomCrawler) collectEntityUrls(baseUrl string) []string {
-	return nil
+func (p *PhuntDomCrawler) CollectEntityUrls(baseUrl string) []string {
+	resp, err := http.Get(baseUrl)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		panic(fmt.Errorf("an error occurred while %s sending. status code %d", baseUrl, resp.StatusCode))
+	}
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	var productURLs []string
+
+	doc.Find("section").Each(func(i int, s *goquery.Selection) {
+		href, exists := s.Find("a").Attr("href")
+		if exists {
+			productURLs = append(productURLs, fmt.Sprintf("%s%s", PRODUCT_HUNT_BASE_URL, href))
+		}
+	})
+
+	return productURLs
 }
 
-func (p *PhuntDomCrawler) scrapeEntity(entityUrl string) Product {
+func (p *PhuntDomCrawler) ScrapeEntity(entityUrl string) Product {
 	return Product{}
 }

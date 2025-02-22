@@ -13,3 +13,10 @@ type EntityUrl struct {
 	CreatedAt     time.Time `gorm:"autoCreateTime"`
 	BaseEntityUrl string    `gorm:"type:varchar(100);not null"`
 }
+
+func NewEntityUrl(url string, baseEntityUrl string) *EntityUrl {
+	return &EntityUrl{
+		Url:           url,
+		BaseEntityUrl: baseEntityUrl,
+	}
+}

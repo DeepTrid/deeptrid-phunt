@@ -43,7 +43,7 @@ func (h *BaseUrlService) GetBaseUrlByUrl(url string) (models.BaseUrl, error) {
 }
 
 func (h *BaseUrlService) CreateBaseUrlRecord(url string) error {
-	baseUrl := models.BaseUrl{Url: url}
+	baseUrl := models.NewBaseUrl(url)
 	err := h.postgreDb.GormDB.Create(baseUrl).Error
 	if err != nil {
 		return fmt.Errorf("failed to create base url: %w", err)

@@ -14,7 +14,7 @@ type PostgreDb struct {
 }
 
 func NewPostgreSqlDb(cfg *config.Config) (*PostgreDb, error) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Europa/Istanbul",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Europe/Istanbul",
 		cfg.PostgreHost, cfg.PostgreUser, cfg.PostgrePassword, cfg.PostgreDbName, cfg.PostgrePort)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
