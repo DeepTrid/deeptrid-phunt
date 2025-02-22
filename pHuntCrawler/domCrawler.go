@@ -8,22 +8,24 @@ import (
 	"github.com/fmelihh/product-hunt-graph-visualize/services"
 )
 
+const PRODUCT_HUNT_BASE_URL = "https://www.producthunt.com"
+
 type PhuntDomCrawler struct {
-	historyService services.HistoryService
+	baseUrlService services.BaseUrlService
 }
 
-func NewPhuntDomCrawler(historyService *services.HistoryService) *PhuntDomCrawler {
+func NewPhuntDomCrawler(baseUrlService *services.BaseUrlService) *PhuntDomCrawler {
 	return &PhuntDomCrawler{
-		historyService: *historyService,
+		baseUrlService: *baseUrlService,
 	}
 }
 
 func (p *PhuntDomCrawler) crawl() []Product {
-	urls := p.generateUrls()
+	baseUrls := p.generateBaseUrls()
 
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
-	for _, url := range urls {
+	for _, url := range baseUrls {
 		chromedp.Run(
 			ctx,
 			chromedp.Navigate(url),
@@ -33,6 +35,14 @@ func (p *PhuntDomCrawler) crawl() []Product {
 	return nil
 }
 
-func (p *PhuntDomCrawler) generateUrls() []string {
+func (p *PhuntDomCrawler) generateBaseUrls() []string {
 	return nil
+}
+
+func (p *PhuntDomCrawler) collectEntityUrls(baseUrl string) []string {
+	return nil
+}
+
+func (p *PhuntDomCrawler) scrapeEntity(entityUrl string) Product {
+	return Product{}
 }

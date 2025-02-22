@@ -1,8 +1,10 @@
 package phuntcrawler
 
 type IPhuntCrawler interface {
-	generateUrls() []string
 	crawl() []Product
+	generateBaseUrls() []string
+	scrapeEntity(entityUrl string) Product
+	collectEntityUrls(baseUrl string) []string
 }
 
 type ProductSubComments struct {

@@ -26,7 +26,7 @@ func NewPostgreSqlDb(cfg *config.Config) (*PostgreDb, error) {
 }
 
 func (d *PostgreDb) MigrateDatabaseModels() {
-	err := d.GormDB.AutoMigrate(&models.History{})
+	err := d.GormDB.AutoMigrate(&models.BaseUrl{}, &models.EntityUrl{})
 	if err != nil {
 		panic(fmt.Errorf("failed to auto-migrate database schema: %w", err))
 	}
