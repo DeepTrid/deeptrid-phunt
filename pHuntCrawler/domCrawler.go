@@ -1,42 +1,91 @@
 package phuntcrawler
 
 import (
-	"context"
+	"fmt"
+	"slices"
 	"time"
 
-	"github.com/chromedp/chromedp"
 	"github.com/fmelihh/product-hunt-graph-visualize/services"
 )
 
-const PRODUCT_HUNT_BASE_URL = "https://www.producthunt.com"
+const PRODUCT_HUNT_BASE_URL string = "https://www.producthunt.com"
 
-type PhuntDomCrawler struct {
-	baseUrlService services.BaseUrlService
+type ServiceDependencies struct {
+	baseUrlService   services.BaseUrlService
+	entityUrlService services.EntityUrlService
 }
 
-func NewPhuntDomCrawler(baseUrlService *services.BaseUrlService) *PhuntDomCrawler {
+type PhuntDomCrawler struct {
+	serviceDependencies ServiceDependencies
+}
+
+func NewPhuntDomCrawler(serviceDependencies *ServiceDependencies) *PhuntDomCrawler {
 	return &PhuntDomCrawler{
-		baseUrlService: *baseUrlService,
+		serviceDependencies: *serviceDependencies,
 	}
 }
 
 func (p *PhuntDomCrawler) crawl() []Product {
 	baseUrls := p.generateBaseUrls()
+	allEntityUrls := make([]string, 10)
 
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-	for _, url := range baseUrls {
-		chromedp.Run(
-			ctx,
-			chromedp.Navigate(url),
-			chromedp.Sleep(2000*time.Millisecond),
+	for _, baseUrl := range baseUrls {
+		entityUrls := p.collectEntityUrls(baseUrl)
+		for _, entityUrl := range entityUrls {
+			p.serviceDependencies.entityUrlService.CreateEntityUrlRecord(entityUrl, baseUrl)
+			allEntityUrls = append(allEntityUrls, entityUrl)
+		}
+		p.serviceDependencies.baseUrlService.CreateBaseUrlRecord(
+			baseUrl,
 		)
 	}
+	fmt.Print(allEntityUrls)
+	/*
+		ctx, cancel := chromedp.NewContext(context.Background())
+		defer cancel()
+		for _, url := range baseUrls {
+			chromedp.Run(
+				ctx,
+				chromedp.Navigate(url),
+				chromedp.Sleep(2000*time.Millisecond),
+			)
+		}
+		return nil
+	*/
+
 	return nil
 }
 
 func (p *PhuntDomCrawler) generateBaseUrls() []string {
-	return nil
+	baseUrls, err := p.serviceDependencies.baseUrlService.GetAllUrls()
+	if err != nil {
+		panic(err)
+	}
+
+	allPossibleUrls := (func() []string {
+		startDate, err := time.Parse("2006/01/02", "2013/12/01")
+		if err != nil {
+			panic(err)
+		}
+
+		today := time.Now()
+		var dates []string
+
+		for currentDate := startDate; !currentDate.After(today); currentDate = currentDate.AddDate(0, 0, 1) {
+			dates = append(dates, currentDate.Format("2006/01/02"))
+		}
+		return dates
+	})()
+
+	filteredUrls := make([]string, 10, 10)
+	for _, url := range allPossibleUrls {
+		if !slices.Contains(baseUrls, url) {
+			filteredUrls = append(filteredUrls, url)
+		}
+
+	}
+
+	return filteredUrls
 }
 
 func (p *PhuntDomCrawler) collectEntityUrls(baseUrl string) []string {

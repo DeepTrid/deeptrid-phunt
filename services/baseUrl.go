@@ -31,7 +31,6 @@ func (h *BaseUrlService) GetAllUrls() ([]string, error) {
 	}
 
 	return urls, nil
-
 }
 
 func (h *BaseUrlService) GetBaseUrlByUrl(url string) (models.BaseUrl, error) {
