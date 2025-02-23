@@ -29,7 +29,7 @@ type Product struct {
 	Tags               []string
 	ProductTeamMembers []ProductTeamMember
 	Points             int
-	Comments           int
+	Comments           []ProductComments
 	DayRank            int
 	WeekRank           int
 }

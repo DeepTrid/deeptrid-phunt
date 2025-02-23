@@ -1,12 +1,14 @@
 package phuntcrawler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"slices"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chromedp/chromedp"
 	"github.com/fmelihh/product-hunt-graph-visualize/services"
 )
 
@@ -44,18 +46,16 @@ func (p *PhuntDomCrawler) Crawl() []Product {
 		fmt.Printf("%s base url was successfully added to db, total entity url is %d", baseUrl, len(allEntityUrls))
 		time.Sleep(30 * time.Second)
 	}
-	/*
-		ctx, cancel := chromedp.NewContext(context.Background())
-		defer cancel()
-		for _, url := range baseUrls {
-			chromedp.Run(
-				ctx,
-				chromedp.Navigate(url),
-				chromedp.Sleep(2000*time.Millisecond),
-			)
-		}
-		return nil
-	*/
+
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+	for _, url := range baseUrls {
+		chromedp.Run(
+			ctx,
+			chromedp.Navigate(url),
+			chromedp.Sleep(2000*time.Millisecond),
+		)
+	}
 
 	return nil
 }
