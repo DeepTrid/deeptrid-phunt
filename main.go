@@ -11,6 +11,7 @@ import (
 
 func main() {
 	fmt.Println("**** PRODUCT-HUNT-GRAPH-VISUALIZE PROJECT ****")
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		panic(err)
@@ -27,5 +28,6 @@ func main() {
 		EntityUrlService: *services.NewEntityUrlService(*pdb),
 	}
 	pHuntDomCrawler := phuntcrawler.NewPhuntDomCrawler(&phuntCrawlerServiceDependencies)
-	pHuntDomCrawler.Crawl()
+	product := pHuntDomCrawler.ScrapeEntity("https://www.producthunt.com/products/trello")
+	fmt.Print(product)
 }
