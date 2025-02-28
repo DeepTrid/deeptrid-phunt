@@ -3,7 +3,10 @@ package phuntcrawler
 import (
 	"context"
 	"log"
+	"slices"
+	"strings"
 
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 )
 
@@ -67,7 +70,28 @@ func (e *EntityBuilder) GetTags() []string {
 	if err := e.ensureNavigation(); err != nil {
 		panic(err)
 	}
-	return []string{}
+	var tags []string
+	var nodes []*cdp.Node
+
+	tagsXpath := `//div[@data-sentry-component="TagList"]/a`
+	err := chromedp.Run(e.ctx, chromedp.WaitReady(tagsXpath), chromedp.Nodes(tagsXpath, &nodes))
+	if err != nil {
+		log.Printf("Error getting description: %v", err)
+		return []string{}
+	}
+
+	for _, node := range nodes {
+		if node.NodeType == 1 {
+			nodeValue := strings.TrimSpace(node.Children[0].NodeValue)
+			if !slices.Contains(tags, nodeValue) {
+				tags = append(tags, strings.TrimSpace(node.Children[0].NodeValue))
+			} else {
+				break
+			}
+		}
+	}
+
+	return tags
 }
 
 func (e *EntityBuilder) GetProductTeamMembers() []ProductTeamMember {

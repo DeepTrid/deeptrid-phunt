@@ -125,10 +125,11 @@ func (p *PhuntDomCrawler) ScrapeEntity(entityUrl string) Product {
 	defer cancel()
 
 	entityBuilder := NewEntityBuilder(entityUrl, ctx)
+	tags := entityBuilder.GetTags()
 	product := Product{
 		ProductName:        entityBuilder.GetProductName(),
 		ProductDescription: entityBuilder.GetProductDescription(),
-		Tags:               entityBuilder.GetTags(),
+		Tags:               tags,
 		ProductTeamMembers: entityBuilder.GetProductTeamMembers(),
 		Points:             entityBuilder.GetPoints(),
 		Comments:           entityBuilder.GetComments(),
