@@ -87,9 +87,7 @@ func (p *PhuntDomCrawler) GenerateBaseUrls() []string {
 		if !slices.Contains(baseUrls, url) {
 			filteredUrls = append(filteredUrls, url)
 		}
-
 	}
-
 	return filteredUrls
 }
 
@@ -125,12 +123,12 @@ func (p *PhuntDomCrawler) ScrapeEntity(entityUrl string) Product {
 	defer cancel()
 
 	entityBuilder := NewEntityBuilder(entityUrl, ctx)
-	tags := entityBuilder.GetTags()
+	ProductTeamMembers := entityBuilder.GetProductTeamMembers()
 	product := Product{
 		ProductName:        entityBuilder.GetProductName(),
 		ProductDescription: entityBuilder.GetProductDescription(),
-		Tags:               tags,
-		ProductTeamMembers: entityBuilder.GetProductTeamMembers(),
+		Tags:               entityBuilder.GetTags(),
+		ProductTeamMembers: ProductTeamMembers,
 		Points:             entityBuilder.GetPoints(),
 		Comments:           entityBuilder.GetComments(),
 		DayRank:            entityBuilder.GetDayRank(),

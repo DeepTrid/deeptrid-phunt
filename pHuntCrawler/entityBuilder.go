@@ -98,7 +98,45 @@ func (e *EntityBuilder) GetProductTeamMembers() []ProductTeamMember {
 	if err := e.ensureNavigation(); err != nil {
 		panic(err)
 	}
-	return []ProductTeamMember{}
+	var nodes []*cdp.Node
+	var teamMembers []ProductTeamMember
+
+	teamMembersButton := `//a[text() = "Team"]`
+	teamMembersXpath := `//div[@data-sentry-component="InfiniteScroll"]/section[contains(@data-test,"maker-card")]`
+
+	err := chromedp.Run(e.ctx,
+		chromedp.WaitReady(teamMembersButton),
+		chromedp.Click(teamMembersButton),
+		chromedp.ActionFunc(
+			func(ctx context.Context) error {
+				return chromedp.Evaluate(`window.scrollTo(0, document.body.scrollHeight);`, nil).Do(ctx)
+			}),
+		chromedp.WaitReady(teamMembersXpath),
+		chromedp.Nodes(teamMembersXpath, &nodes),
+	)
+
+	if err != nil {
+		log.Printf("Error getting description: %v", err)
+		return []ProductTeamMember{}
+	}
+
+	for _, node := range nodes {
+		var name, position string
+		err := chromedp.Run(e.ctx,
+			chromedp.Text(node.FullXPath()+`/div[2]/a[1]`, &name),
+			chromedp.Text(node.FullXPath()+`/div[2]/a[2]`, &position),
+		)
+		if err != nil {
+			log.Println("Error extracting data:", err)
+			continue
+		}
+		teamMembers = append(teamMembers, ProductTeamMember{
+			Name:     name,
+			Position: position,
+		})
+	}
+
+	return teamMembers
 }
 
 func (e *EntityBuilder) GetPoints() int {
