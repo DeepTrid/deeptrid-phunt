@@ -7,15 +7,11 @@ type IPhuntCrawler interface {
 	CollectEntityUrls(baseUrl string) []string
 }
 
-type ProductSubComments struct {
-	MemberName string
-	Comment    string
-}
-
 type ProductComments struct {
-	MemberName  string
-	Comment     string
-	SubComments []ProductSubComments
+	MemberName    string
+	Comment       string
+	StarCount     int
+	CreatedAtMark string
 }
 
 type ProductTeamMember struct {

@@ -119,18 +119,18 @@ func (p *PhuntDomCrawler) CollectEntityUrls(baseUrl string) []string {
 }
 
 func (p *PhuntDomCrawler) ScrapeEntity(entityUrl string) Product {
-	ctx, cancel := chromedp.NewContext(context.Background())
+	contextValue, cancel := createChromadpContext(context.Background())
 	defer cancel()
 
-	entityBuilder := NewEntityBuilder(entityUrl, ctx)
-	ProductTeamMembers := entityBuilder.GetProductTeamMembers()
+	entityBuilder := NewEntityBuilder(entityUrl, contextValue)
+	comments := entityBuilder.GetComments()
 	product := Product{
 		ProductName:        entityBuilder.GetProductName(),
 		ProductDescription: entityBuilder.GetProductDescription(),
 		Tags:               entityBuilder.GetTags(),
-		ProductTeamMembers: ProductTeamMembers,
+		ProductTeamMembers: entityBuilder.GetProductTeamMembers(),
 		Points:             entityBuilder.GetPoints(),
-		Comments:           entityBuilder.GetComments(),
+		Comments:           comments,
 		DayRank:            entityBuilder.GetDayRank(),
 		WeekRank:           entityBuilder.GetWeekRank(),
 	}
